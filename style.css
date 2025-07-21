@@ -1,0 +1,192 @@
+/* 全体のスタイルリセット */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #0a0a2a;
+    color: #ffffff;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+/* ゲームコンテナ */
+.game-container {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #ffcc00;
+    text-shadow: 0 0 10px rgba(255, 204, 0, 0.7);
+}
+
+/* キャンバスコンテナ */
+.canvas-container {
+    position: relative;
+    width: 400px;
+    height: 600px;
+    margin: 0 auto;
+    border: 2px solid #3333cc;
+    border-radius: 5px;
+    overflow: hidden;
+    background-color: #000033;
+}
+
+/* ゲームキャンバス */
+#game-canvas {
+    display: block;
+    background-color: #000033;
+}
+
+/* ゲーム情報表示 */
+#game-info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    text-align: left;
+    color: #ffffff;
+    font-size: 14px;
+    z-index: 10;
+}
+
+.info-row {
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+}
+
+/* パワーメーター */
+#power-meter {
+    width: 60px;
+    height: 10px;
+    background-color: #333333;
+    border: 1px solid #666666;
+    margin-left: 5px;
+}
+
+#power-level {
+    height: 100%;
+    width: 33%; /* 初期値: 1/3 (パワーレベル1) */
+    background-color: #00ff00;
+}
+
+/* オーバーレイ画面（スタート、ゲームオーバー、一時停止） */
+.overlay-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 51, 0.8);
+    z-index: 100;
+}
+
+.screen-content {
+    text-align: center;
+    padding: 20px;
+}
+
+.hidden {
+    display: none;
+}
+
+.game-title {
+    font-size: 36px;
+    color: #ffcc00;
+    margin-bottom: 20px;
+    text-shadow: 0 0 15px rgba(255, 204, 0, 0.9);
+}
+
+.game-instructions {
+    margin-bottom: 30px;
+    font-size: 16px;
+}
+
+.game-button {
+    background-color: #3333cc;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.game-button:hover {
+    background-color: #4444ff;
+}
+
+/* ゲームコントロール説明 */
+.game-controls {
+    margin-top: 30px;
+    text-align: left;
+    background-color: #111144;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.game-controls h3 {
+    color: #ffcc00;
+    margin-bottom: 10px;
+}
+
+.game-controls ul {
+    list-style-type: none;
+}
+
+.game-controls li {
+    margin-bottom: 5px;
+}
+
+/* ゲーム情報 */
+.game-info {
+    margin-top: 20px;
+    text-align: left;
+    background-color: #111144;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.game-info h3 {
+    color: #ffcc00;
+    margin-bottom: 10px;
+}
+
+.game-info p {
+    margin-bottom: 10px;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 600px) {
+    .game-container {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 20px;
+    }
+    
+    .canvas-container {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 2/3;
+    }
+    
+    #game-canvas {
+        width: 100%;
+        height: 100%;
+    }
+}
+

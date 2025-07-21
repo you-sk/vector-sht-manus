@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宇宙の防衛者 - 弾幕シューティングゲーム</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>宇宙の防衛者 - 弾幕シューティングゲーム</h1>
+        
+        <!-- ゲームキャンバス -->
+        <div class="canvas-container">
+            <canvas id="game-canvas" width="400" height="600"></canvas>
+            
+            <!-- ゲーム情報表示 -->
+            <div id="game-info">
+                <div class="info-row">
+                    <span>スコア: </span>
+                    <span id="score-value">0</span>
+                </div>
+                <div class="info-row">
+                    <span>ライフ: </span>
+                    <span id="lives-value">3</span>
+                </div>
+                <div class="info-row">
+                    <span>レベル: </span>
+                    <span id="level-value">1</span>
+                </div>
+                <div class="info-row" id="power-level-container">
+                    <span>パワー: </span>
+                    <div id="power-meter">
+                        <div id="power-level"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- スタート画面 -->
+            <div id="start-screen" class="overlay-screen">
+                <div class="screen-content">
+                    <h2 class="game-title">宇宙の防衛者</h2>
+                    <p class="game-instructions">矢印キーで移動、スペースキーで発射</p>
+                    <button id="start-button" class="game-button">ゲーム開始</button>
+                </div>
+            </div>
+            
+            <!-- ゲームオーバー画面 -->
+            <div id="game-over-screen" class="overlay-screen hidden">
+                <div class="screen-content">
+                    <h2>ゲームオーバー</h2>
+                    <p>最終スコア: <span id="final-score">0</span></p>
+                    <button id="retry-button" class="game-button">もう一度プレイ</button>
+                </div>
+            </div>
+            
+            <!-- 一時停止画面 -->
+            <div id="pause-screen" class="overlay-screen hidden">
+                <div class="screen-content">
+                    <h2>一時停止</h2>
+                    <button id="resume-button" class="game-button">ゲームを再開</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ゲームコントロール説明 -->
+        <div class="game-controls">
+            <h3>操作方法</h3>
+            <ul>
+                <li>矢印キー: 移動</li>
+                <li>スペースキー: 弾を発射</li>
+                <li>Pキー: 一時停止</li>
+            </ul>
+        </div>
+        
+        <!-- ゲーム情報 -->
+        <div class="game-info">
+            <h3>ゲーム情報</h3>
+            <p>敵の宇宙船を倒して、高得点を目指そう！</p>
+            <p>パワーアップアイテムを取得すると、武器がパワーアップします。</p>
+            <p>敵の弾に当たると、ライフが減少します。ライフが0になるとゲームオーバーです。</p>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>
+
