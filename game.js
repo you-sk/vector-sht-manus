@@ -43,6 +43,17 @@ class Game {
         this.lives = 3;
         this.level = 1;
         
+        // グレイズシステム
+        this.grazeCount = 0;
+        this.grazeBonus = 10; // グレイズごとの基本ボーナス点
+        
+        // コンボシステム
+        this.combo = 0;
+        this.comboMultiplier = 1;
+        this.comboTimer = 0;
+        this.comboTimeout = 2000; // 2秒でコンボリセット
+        this.maxComboMultiplier = 10;
+        
         // 画面要素
         this.startScreen = document.getElementById('start-screen');
         this.gameOverScreen = document.getElementById('game-over-screen');
@@ -52,6 +63,8 @@ class Game {
         this.livesValueElement = document.getElementById('lives-value');
         this.levelValueElement = document.getElementById('level-value');
         this.powerLevelElement = document.getElementById('power-level');
+        this.grazeValueElement = document.getElementById('graze-value');
+        this.comboValueElement = document.getElementById('combo-value');
         
         // ゲームオブジェクト
         this.player = null;
@@ -60,6 +73,7 @@ class Game {
         this.enemyBullets = [];
         this.powerUps = [];
         this.explosions = []; // 爆発エフェクト
+        this.grazeEffects = []; // グレイズエフェクト
         
         // 背景の星
         this.stars = [];
@@ -234,11 +248,16 @@ class Game {
         this.score = 0;
         this.lives = 3;
         this.level = 1;
+        this.grazeCount = 0;
+        this.combo = 0;
+        this.comboMultiplier = 1;
+        this.comboTimer = 0;
         this.enemies = [];
         this.playerBullets = [];
         this.enemyBullets = [];
         this.powerUps = [];
         this.explosions = [];
+        this.grazeEffects = [];
         this.enemySpawnTimer = 0;
         this.bossSpawnTimer = 0;
         
@@ -257,11 +276,24 @@ class Game {
         this.scoreValueElement.textContent = this.score;
         this.livesValueElement.textContent = this.lives;
         this.levelValueElement.textContent = this.level;
+        this.grazeValueElement.textContent = this.grazeCount;
+        this.comboValueElement.textContent = `x${this.comboMultiplier}`;
         
         // パワーレベルの表示更新
         if (this.player) {
             const powerPercentage = (this.player.powerLevel / 3) * 100;
             this.powerLevelElement.style.width = `${powerPercentage}%`;
+        }
+        
+        // コンボ倍率に応じて色を変更
+        if (this.comboMultiplier >= 8) {
+            this.comboValueElement.style.color = '#FF00FF';
+        } else if (this.comboMultiplier >= 5) {
+            this.comboValueElement.style.color = '#FF0000';
+        } else if (this.comboMultiplier >= 3) {
+            this.comboValueElement.style.color = '#FFFF00';
+        } else {
+            this.comboValueElement.style.color = '#FFFFFF';
         }
     }
     
@@ -348,6 +380,20 @@ class Game {
             return !explosion.isFinished(); // 終了した爆発エフェクトを削除
         });
         
+        // グレイズエフェクトの更新と削除
+        this.grazeEffects = this.grazeEffects.filter(effect => {
+            effect.update(deltaTime);
+            return !effect.isFinished();
+        });
+        
+        // コンボタイマーの更新
+        if (this.combo > 0) {
+            this.comboTimer += deltaTime;
+            if (this.comboTimer >= this.comboTimeout) {
+                this.resetCombo();
+            }
+        }
+        
         // 衝突判定
         this.checkCollisions();
         
@@ -407,7 +453,7 @@ class Game {
     checkCollisions() {
         if (!this.player) return;
         
-        // プレイヤーと敵の弾の衝突判定
+        // プレイヤーと敵の弾の衝突判定とグレイズ判定
         this.enemyBullets = this.enemyBullets.filter(bullet => {
             const playerHitbox = {
                 x: this.player.x + this.player.width / 4,
@@ -415,6 +461,21 @@ class Game {
                 width: this.player.width / 2,
                 height: this.player.height / 2
             };
+            
+            // グレイズ判定（弾がプレイヤーの近くを通った場合）
+            const grazeDistance = 20; // グレイズ範囲
+            const grazeBox = {
+                x: this.player.x - grazeDistance,
+                y: this.player.y - grazeDistance,
+                width: this.player.width + grazeDistance * 2,
+                height: this.player.height + grazeDistance * 2
+            };
+            
+            if (!bullet.grazed && this.isColliding(bullet, grazeBox) && !this.isColliding(bullet, playerHitbox)) {
+                // グレイズ成功
+                bullet.grazed = true;
+                this.graze(bullet);
+            }
             
             if (this.isColliding(bullet, playerHitbox) && !this.player.invincible) {
                 this.player.takeDamage();
@@ -440,6 +501,8 @@ class Game {
                             enemy.y + enemy.height / 2,
                             enemy.color
                         );
+                        // コンボの継続
+                        this.continueCombo();
                         // 敵が撃破されたら削除
                         return false;
                     }
@@ -482,6 +545,12 @@ class Game {
         this.explosions.push(explosion);
     }
     
+    // グレイズエフェクトの生成
+    createGrazeEffect(x, y) {
+        const effect = new GrazeEffect(this, x, y);
+        this.grazeEffects.push(effect);
+    }
+    
     // 描画処理
     render() {
         // キャンバスのクリア
@@ -519,6 +588,11 @@ class Game {
         this.explosions.forEach(explosion => {
             explosion.draw(this.ctx);
         });
+        
+        // グレイズエフェクトの描画
+        this.grazeEffects.forEach(effect => {
+            effect.draw(this.ctx);
+        });
     }
     
     // 背景の描画
@@ -537,7 +611,9 @@ class Game {
     
     // スコア加算
     addScore(points) {
-        this.score += points;
+        // コンボ倍率を適用
+        const finalPoints = Math.floor(points * this.comboMultiplier);
+        this.score += finalPoints;
         
         // 一定スコアごとにレベルアップ
         if (this.score >= this.level * 1000) {
@@ -545,9 +621,39 @@ class Game {
         }
     }
     
+    // グレイズ処理
+    graze(bullet) {
+        this.grazeCount++;
+        
+        // グレイズボーナススコア（グレイズ数が増えるほどボーナスも増加）
+        const bonusScore = this.grazeBonus * Math.min(this.grazeCount, 10);
+        this.addScore(bonusScore);
+        
+        // グレイズエフェクトを生成
+        this.createGrazeEffect(bullet.x, bullet.y);
+    }
+    
+    // コンボ継続
+    continueCombo() {
+        this.combo++;
+        this.comboTimer = 0;
+        
+        // コンボ倍率の更新
+        this.comboMultiplier = Math.min(1 + Math.floor(this.combo / 5), this.maxComboMultiplier);
+    }
+    
+    // コンボリセット
+    resetCombo() {
+        this.combo = 0;
+        this.comboMultiplier = 1;
+        this.comboTimer = 0;
+    }
+    
     // ライフ減少
     loseLife() {
         this.lives--;
+        // ダメージでコンボリセット
+        this.resetCombo();
         if (this.lives <= 0) {
             this.gameOver();
         }
@@ -1262,6 +1368,53 @@ class Explosion {
     // 爆発エフェクトの終了判定
     isFinished() {
         return this.alpha <= 0;
+    }
+}
+
+// グレイズエフェクトクラス
+class GrazeEffect {
+    constructor(game, x, y) {
+        this.game = game;
+        this.x = x;
+        this.y = y;
+        this.radius = 10;
+        this.maxRadius = 25;
+        this.expandSpeed = 0.8;
+        this.alpha = 1;
+        this.fadeSpeed = 0.04;
+        this.color = '#00FFFF';
+    }
+    
+    update(deltaTime) {
+        // エフェクトの拡大
+        this.radius += this.expandSpeed;
+        
+        // 透明度の減少
+        this.alpha -= this.fadeSpeed;
+    }
+    
+    draw(ctx) {
+        // グレイズエフェクト（青い輪の拡大と透明化）
+        ctx.globalAlpha = Math.max(0, this.alpha);
+        ctx.strokeStyle = this.color;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // 内側にもう一つの輪
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius * 0.7, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        ctx.globalAlpha = 1;
+    }
+    
+    // エフェクトの終了判定
+    isFinished() {
+        return this.alpha <= 0 || this.radius >= this.maxRadius;
     }
 }
 
