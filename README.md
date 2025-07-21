@@ -3,6 +3,8 @@
 ## 概要
 「宇宙の防衛者」は、ブラウザで動作する縦スクロール弾幕シューティングゲームです。プレイヤーは宇宙船を操作し、迫り来る敵の艦隊を撃破しながら高得点を目指します。
 
+<img width="519" height="682" alt="image" src="https://github.com/user-attachments/assets/e03fe39e-02d3-45fc-8711-6c5543c9ffa4" />
+
 https://you-sk.github.io/vector-sht-manus/
 
 ## 特徴
